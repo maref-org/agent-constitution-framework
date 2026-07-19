@@ -1,59 +1,131 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://maref.cc/brand/agent-constitution-framework-dark.svg">
+  <img alt="Agent Constitution Framework" src="https://maref.cc/brand/agent-constitution-framework-light.svg">
+</picture>
+
 # Agent Constitution Framework
 
-**A governance pattern collection for AI agent ecosystems.**
+**Governance patterns for AI agent ecosystems — from single-assistant repositories to multi-agent, multi-repository systems.**
 
-Builders of AI agent systems inevitably face a common set of challenges: How do you ensure agents follow the rules? How do you safely disclose capabilities to the public? How do you manage agents across multiple repositories? How do you handle the boundary between open-source and proprietary code?
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![MAREF](https://img.shields.io/badge/governance-MAREF-7B2FBE)](https://maref.cc)
 
-This framework captures **generalizable governance patterns** extracted from production experience operating a multi-agent, multi-repository AI ecosystem. Each pattern is documented as a standalone guide — adapt the concepts to your own context rather than copying verbatim.
+---
 
-## Motivation
+## Why This Exists
 
-As AI agents become more autonomous and are granted more tools (file write, command execution, network access), the question shifts from *"can the agent do this?"* to *"should the agent do this?"* Traditional code review and CI/CD pipelines are insufficient because agents operate at machine speed, generate novel code paths, and cross repository boundaries.
+AI agents are no longer experimental toys. They write code, execute commands, access files, call APIs, and deploy to production. The question has shifted from *"can the agent do this?"* to *"should the agent do this?"*
 
-Governance patterns help answer:
+Most teams start with **one** Claude Code or Cursor config file and a few ad-hoc rules. That works — until:
 
-- **Constitutional governance**: What is the supreme rule set, and how do you enforce it consistently?
-- **Progressive disclosure**: How do you safely release internal capabilities to the public without leaking sensitive context?
-- **Agent lifecycle**: How do you register, monitor, and retire agents in a multi-agent system?
-- **External agent governance**: How do you control AI coding assistants that operate inside your repository?
-- **Document governance**: How do you maintain a single source of truth across dozens of design documents?
-- **Component boundaries**: How do you keep open-source and proprietary code cleanly separated while allowing them to communicate?
+- You have **multiple agents** (Claude Code + Cursor + GitHub Copilot + Opencode) giving inconsistent answers because each reads a different config file
+- You accidentally **commit an API key** or **internal file path** to a public repository because no one thought to check
+- Two agents **duplicate each other's work** because they don't share a task queue
+- An agent **pushes to the wrong remote** because there's no preflight check
+- You have **20 design documents** with conflicting instructions and no one knows which one is current
 
-## Patterns
+This framework captures **six governance patterns** that solve these problems. They were extracted from production operation of a multi-agent, multi-repository AI ecosystem — but written to be **tool-agnostic and adaptable** to your stack.
 
-| # | Pattern | Description | Source Concepts |
-|---|---------|-------------|-----------------|
-| 1 | [Constitutional Governance](01-constitutional-governance.md) | Supreme rule hierarchy, amendment process, self-check mechanism | Constitutional supremacy, self-audit |
-| 2 | [Progressive Disclosure](02-progressive-disclosure.md) | Multi-tier disclosure model, phase gates, leak prevention | T3-T0 tiers, narrative transformation |
-| 3 | [Agent Lifecycle Management](03-agent-lifecycle.md) | Registration, health states, task queue protocol | Agent identity, heartbeat, task queue |
-| 4 | [External Agent Governance](04-external-agent-governance.md) | Scope definition, preflight checks, config requirements | Code agent preflight, document hierarchy |
-| 5 | [Document Governance](05-document-governance.md) | Single source of truth, priority hierarchy, archive semantics | File lifecycle, completion proof |
-| 6 | [Component Boundary Patterns](06-component-boundaries.md) | Import discipline, protocol-layer communication, degradation strategies | Package isolation, FAIL_MODE, dual identity |
+---
 
-## How to Use
+## The Patterns
 
-Each pattern document is self-contained. You can:
+| # | Pattern | Problem It Solves | Key Concepts |
+|---|---------|-------------------|-------------|
+| 1 | **[Constitutional Governance](01-constitutional-governance.md)** | Multiple agents read different config files with conflicting rules. Which one wins? | Supremacy hierarchy, amendment process, self-check (human principles + CI enforcement) |
+| 2 | **[Progressive Disclosure](02-progressive-disclosure.md)** | Internal context (paths, endpoints, costs, keys) leaks to public repos during release. | 4-tier disclosure model, phase gates, narrativization, leak prevention checklist |
+| 3 | **[Agent Lifecycle Management](03-agent-lifecycle.md)** | Agents crash silently, duplicate work, or run without anyone knowing. | Registration + identity, health state machine, lock-free shared task queue |
+| 4 | **[External Agent Governance](04-external-agent-governance.md)** | AI coding assistants (Claude Code, Cursor, Copilot) each have their own config and tool access. | Scope map, preflight checks, config requirements, document source hierarchy |
+| 5 | **[Document Governance](05-document-governance.md)** | Design docs proliferate, contradict each other, and nobody knows what's current. | Single source of truth, file lifecycle, priority tiers, archive semantics, completion proof |
+| 6 | **[Component Boundaries](06-component-boundaries.md)** | Open-source and proprietary code get tangled. Internal dependencies leak to public packages. | Package-level imports, protocol-layer communication, FAIL_MODE degradation, dual identity |
 
-1. **Read sequentially** if you're building governance from scratch
-2. **Pick individual patterns** that match your current pain point
-3. **Adopt incrementally** — start with Constitutional Governance (the foundation), then layer on Progressive Disclosure or Agent Lifecycle as your system grows
+---
 
-The patterns intentionally avoid prescribing specific tools or platforms. They describe **what** to govern and **why**, not the specific implementation. Adapt the tier definitions, checklists, and state machines to your technology stack.
+## Quick Start
 
-## Relationship to MAREF
+**Pick your biggest pain point and start there.**
 
-This framework is the **policy layer** — it defines *what rules should exist*. [MAREF](https://maref.cc) (Multi-Agent Recursive Evolution Framework) provides the **enforcement layer** — it intercepts tool calls and enforces the rules at runtime. They are complementary:
+```bash
+# Clone the framework
+git clone https://github.com/maref-org/agent-constitution-framework.git
+
+# Read the pattern that matches your current problem
+open agent-constitution-framework/01-constitutional-governance.md
+```
+
+### Adoption Roadmap
+
+The patterns are designed to be adopted **incrementally** — you don't need all six to get value:
 
 ```
- ┌─────────────────────────────────────┐
- │  Agent Constitution Framework       │  ← Policy (this repo)
- │  "What should we prevent?"          │
- ├─────────────────────────────────────┤
- │  MAREF Governance Plugin            │  ← Enforcement (maref-org/maref-governance)
- │  "How do we prevent it?"            │
- └─────────────────────────────────────┘
+Phase 0 (single agent, single repo)
+  └── Start with Pattern 1 (Constitutional Governance)
+  └── Add Pattern 5 (Document Governance) if docs are already multiplying
+
+Phase 1 (multiple agents, same repo)
+  └── Add Pattern 4 (External Agent Governance) — unify config files
+  └── Add Pattern 3 (Agent Lifecycle) — track who's running
+
+Phase 2 (mixed open-source/proprietary)
+  └── Add Pattern 2 (Progressive Disclosure) — safe public release
+  └── Add Pattern 6 (Component Boundaries) — clean separation
+
+Phase 3 (multi-repo ecosystem)
+  └── Layer all six patterns across repositories
+  └── Establish constitution hierarchy across repos
 ```
+
+Each pattern document is self-contained: read it in isolation, implement what fits, skip what doesn't.
+
+---
+
+## Relationship with MAREF
+
+The Agent Constitution Framework is the **policy layer**. [MAREF](https://maref.cc) (Multi-Agent Recursive Evolution Framework) is the **enforcement layer**. They are complementary:
+
+```
+              ┌─────────────────────────────────────┐
+   Policy     │  Agent Constitution Framework        │
+   (WHAT)     │  Defines rules and governance models │
+              └──────────────────────┬──────────────┘
+                                     │ rules
+                                     ▼
+              ┌─────────────────────────────────────┐
+ Enforcement  │  MAREF Governance Plugin             │
+   (HOW)      │  Intercepts tool calls at runtime    │
+              │  Enforces policies via sidecar        │
+              │  Blocks violations before they happen │
+              └─────────────────────────────────────┘
+```
+
+- **This repo** answers "what should we prevent and why?"
+- **[maref-org/maref-governance](https://github.com/maref-org/maref-governance)** answers "how do we prevent it at runtime?"
+
+---
+
+## FAQ
+
+**Q: Do I need all six patterns to benefit?**  
+A: No. Each pattern is independent. Start with the one that matches your current pain point.
+
+**Q: Are these tied to a specific programming language or platform?**  
+A: No. The patterns describe concepts (tiered disclosure, heartbeat protocols, import disciplines) that apply to any language or stack.
+
+**Q: Is this specific to Claude Code / Cursor / Copilot?**  
+A: The External Agent Governance pattern references common AI coding tools, but the pattern itself — preflight checks, config unification, document hierarchy — applies regardless of which agents you use.
+
+**Q: How much overhead do these patterns add?**  
+A: That's up to you. The framework provides principles; you decide the implementation depth. A minimal adoption (one-page constitution + one preflight script) takes an afternoon. Full adoption across 6 patterns is a multi-month journey.
+
+**Q: Is this framework production-tested?**  
+A: Yes. The patterns were extracted from a multi-agent, multi-repository AI ecosystem operating in production since early 2026.
+
+---
 
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE).
+
+---
+
+*Built for agent ecosystems that need rules, not just tools.*
